@@ -97,6 +97,4 @@ public class DbHandler extends SQLiteOpenHelper{
         cursor.close();
         return object;
     }
-
-
 }
