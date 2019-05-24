@@ -11,6 +11,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 import com.example.lynford.personal_notes_app.R;
 import com.example.lynford.personal_notes_app.helper.DbHandler;
+import com.example.lynford.personal_notes_app.model.ModelUsers;
+import com.example.lynford.personal_notes_app.pref.MySharedPreferences;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -19,12 +21,27 @@ public class LoginActivity extends AppCompatActivity {
     DbHandler dbHandler;
     private AlertDialog dialog;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        /**
+         * shared preferences
+         */
+        final MySharedPreferences mySharedPreferences = new MySharedPreferences(LoginActivity.this);
+
+        if(mySharedPreferences.getUser() != null){
+            Intent intent = new Intent(LoginActivity.this,MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+        }
+
         setContentView(R.layout.activity_main);
 
        dbHandler = new DbHandler(LoginActivity.this);
+
+
 
         txtUsername = findViewById(R.id.input_usernmae);
         txtPassword = findViewById(R.id.input_password);
@@ -41,9 +58,14 @@ public class LoginActivity extends AppCompatActivity {
                 if (dbHandler.user_authentication(uname,password)){
 
                     Toast.makeText(LoginActivity.this, "login success", Toast.LENGTH_SHORT).show();
+
                     Intent intent = new Intent(LoginActivity.this,MainActivity.class);
+
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    intent.putExtra("username",uname);
+                    ModelUsers modelUsers = new ModelUsers(uname);
+                    mySharedPreferences.storeUser(modelUsers);
+
+
                     startActivity(intent);
 
 

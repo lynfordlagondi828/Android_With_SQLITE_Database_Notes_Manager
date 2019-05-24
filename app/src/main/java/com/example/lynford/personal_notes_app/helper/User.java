@@ -2,8 +2,7 @@ package com.example.lynford.personal_notes_app.helper;
 
 public class User {
 
-    public static final  String DB_NAME = "notes.db";
-    public static final int DB_VERSION = 1;
+
 
     public static final String USER_TABLE = "users";
 

@@ -6,16 +6,23 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.example.lynford.personal_notes_app.model.ModelNotes;
+
+import java.util.ArrayList;
+
 public class DbHandler extends SQLiteOpenHelper{
 
+    private static final  String DB_NAME = "notes.db";
+    private static final int DB_VERSION = 1;
     /**
      * User Table
      */
     User user;
+    Notes notes;
 
 
     public DbHandler(Context context) {
-        super(context, User.DB_NAME, null, User.DB_VERSION);
+        super(context, DB_NAME, null, DB_VERSION);
 
     }
 
@@ -23,6 +30,7 @@ public class DbHandler extends SQLiteOpenHelper{
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
 
         sqLiteDatabase.execSQL(User.CREATE_TABLE_USER);
+        sqLiteDatabase.execSQL(Notes.CREATE_TABLE_NOTES);
 
     }
 
@@ -30,6 +38,7 @@ public class DbHandler extends SQLiteOpenHelper{
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
 
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + User.USER_TABLE);
+        sqLiteDatabase.execSQL(" DROP TABLE IF EXISTS " + Notes.TABLE_NOTES);
         onCreate(sqLiteDatabase);
     }
 
@@ -96,5 +105,108 @@ public class DbHandler extends SQLiteOpenHelper{
 
         cursor.close();
         return object;
+    }
+
+   /////////////notes manager//////////
+
+    /**
+     * Insert or Add Notes
+     * @param modelNotes
+     */
+    public void add_notes(ModelNotes modelNotes){
+
+        SQLiteDatabase database = getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+
+        contentValues.put(Notes.KEY_USERNAME,modelNotes.getUsername());
+        contentValues.put(Notes.KEY_TITLE,modelNotes.getTitle());
+        contentValues.put(Notes.KEY_DESCRIPTION,modelNotes.getDescription());
+        contentValues.put(Notes.KEY_DATE,modelNotes.getDate_created());
+
+        database.insert(Notes.TABLE_NOTES,null,contentValues);
+    }
+
+    /**
+     * get all records from notes
+     */
+    public ArrayList<ModelNotes>getAllNotes(String username){
+
+        ArrayList<ModelNotes>list = new ArrayList<ModelNotes>();
+        SQLiteDatabase database = getReadableDatabase();
+
+        String sql = "SELECT * FROM " + Notes.TABLE_NOTES + " WHERE username = ?";
+        Cursor cursor = database.rawQuery(sql,new String[]{username});
+
+        if (cursor.moveToFirst()){
+
+            do {
+
+                ModelNotes notes = new ModelNotes();
+
+                notes.setId(Integer.parseInt(cursor.getString(cursor.getColumnIndex(Notes.KEY_ID))));
+                notes.setTitle(cursor.getString(cursor.getColumnIndex(Notes.KEY_TITLE)));
+                notes.setDescription(cursor.getString(cursor.getColumnIndex(Notes.KEY_DESCRIPTION)));
+                notes.setDate_created(cursor.getString(cursor.getColumnIndex(Notes.KEY_DATE)));
+
+                list.add(notes);
+
+            }while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        database.close();
+        return list;
+    }
+
+    /**
+     * get single records
+     */
+    public ModelNotes getSIngleNotesRecords(int id){
+
+        SQLiteDatabase sqLiteDatabase = getReadableDatabase();
+        String sql = "SELECT * FROM " + Notes.TABLE_NOTES + " WHERE id = ?";
+        Cursor cursor = sqLiteDatabase.rawQuery(sql,new String[]{String.valueOf(id)});
+
+        if (cursor != null)
+            cursor.moveToNext();
+
+        ModelNotes modelNotes = new ModelNotes();
+
+        modelNotes.setId(Integer.parseInt(cursor.getString(cursor.getColumnIndex(Notes.KEY_ID))));
+        modelNotes.setTitle(cursor.getString(cursor.getColumnIndex(Notes.KEY_TITLE)));
+        modelNotes.setDescription(cursor.getString(cursor.getColumnIndex(Notes.KEY_DESCRIPTION)));
+        modelNotes.setDate_created(cursor.getString(cursor.getColumnIndex(Notes.KEY_DATE)));
+
+        cursor.close();
+        sqLiteDatabase.close();
+        return modelNotes;
+    }
+
+
+    /**
+     * Delete Item
+     */
+    public void DeleteNotes(int id){
+
+        SQLiteDatabase database = getWritableDatabase();
+        database.delete(Notes.TABLE_NOTES,Notes.KEY_ID + "=?", new String[]{String.valueOf(id)});
+        database.close();
+
+    }
+
+
+    /**
+     * Update Notes
+     */
+    public void UpdateNotes(ModelNotes modelNotes){
+
+        SQLiteDatabase database = getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+
+        contentValues.put(Notes.KEY_TITLE,modelNotes.getTitle());
+        contentValues.put(Notes.KEY_DESCRIPTION,modelNotes.getDescription());
+        contentValues.put(Notes.KEY_DATE,modelNotes.getDate_created());
+        database.update(Notes.TABLE_NOTES,contentValues,Notes.KEY_ID + "=?", new String[]{String.valueOf(modelNotes.getId())});
+
     }
 }
