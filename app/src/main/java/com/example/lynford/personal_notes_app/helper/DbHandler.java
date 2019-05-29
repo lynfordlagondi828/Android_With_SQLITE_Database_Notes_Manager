@@ -8,12 +8,16 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import com.example.lynford.personal_notes_app.model.ModelNotes;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 
 public class DbHandler extends SQLiteOpenHelper{
 
-    private static final  String DB_NAME = "notes.db";
+    private static final  String DB_NAME = "notesmanager.db";
     private static final int DB_VERSION = 1;
+
     /**
      * User Table
      */
@@ -38,7 +42,7 @@ public class DbHandler extends SQLiteOpenHelper{
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
 
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + User.USER_TABLE);
-        sqLiteDatabase.execSQL(" DROP TABLE IF EXISTS " + Notes.TABLE_NOTES);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + Notes.TABLE_NOTES);
         onCreate(sqLiteDatabase);
     }
 
@@ -57,6 +61,8 @@ public class DbHandler extends SQLiteOpenHelper{
 
         database.insert(User.USER_TABLE,null,contentValues);
     }
+
+
 
     /**
      * User Authentication
@@ -109,6 +115,8 @@ public class DbHandler extends SQLiteOpenHelper{
 
    /////////////notes manager//////////
 
+
+
     /**
      * Insert or Add Notes
      * @param modelNotes
@@ -121,7 +129,7 @@ public class DbHandler extends SQLiteOpenHelper{
         contentValues.put(Notes.KEY_USERNAME,modelNotes.getUsername());
         contentValues.put(Notes.KEY_TITLE,modelNotes.getTitle());
         contentValues.put(Notes.KEY_DESCRIPTION,modelNotes.getDescription());
-        contentValues.put(Notes.KEY_DATE,modelNotes.getDate_created());
+        contentValues.put(Notes.KEY_DATE, get_date_time());
 
         database.insert(Notes.TABLE_NOTES,null,contentValues);
     }
@@ -134,7 +142,7 @@ public class DbHandler extends SQLiteOpenHelper{
         ArrayList<ModelNotes>list = new ArrayList<ModelNotes>();
         SQLiteDatabase database = getReadableDatabase();
 
-        String sql = "SELECT * FROM " + Notes.TABLE_NOTES + " WHERE username = ?";
+        String sql = "SELECT * FROM " + Notes.TABLE_NOTES + " WHERE username = ? ORDER BY id DESC";
         Cursor cursor = database.rawQuery(sql,new String[]{username});
 
         if (cursor.moveToFirst()){
@@ -208,5 +216,15 @@ public class DbHandler extends SQLiteOpenHelper{
         contentValues.put(Notes.KEY_DATE,modelNotes.getDate_created());
         database.update(Notes.TABLE_NOTES,contentValues,Notes.KEY_ID + "=?", new String[]{String.valueOf(modelNotes.getId())});
 
+    }
+
+    /**
+     * get date time
+     */
+    private String get_date_time(){
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(
+             "yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        Date date = new Date();
+        return simpleDateFormat.format(date);
     }
 }
